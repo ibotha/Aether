@@ -1,0 +1,6 @@
+[workspace]
+resolver = "3"
+
+members = [
+    "aether", "file_bard", "typed_voice", "voice"
+]

@@ -1,0 +1,8 @@
+[package]
+name = "file_bard"
+version = "0.1.0"
+edition = "2024"
+description = "This program will watch a folder and yell out into the aether."
+
+[dependencies]
+voice = { path = "../voice" }

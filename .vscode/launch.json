@@ -1,0 +1,139 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'aether'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=aether",
+                    "--package=aether"
+                ],
+                "filter": {
+                    "name": "aether",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'aether'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=aether",
+                    "--package=aether"
+                ],
+                "filter": {
+                    "name": "aether",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'folder_bard'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=folder_bard",
+                    "--package=folder_bard"
+                ],
+                "filter": {
+                    "name": "folder_bard",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'folder_bard'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=folder_bard",
+                    "--package=folder_bard"
+                ],
+                "filter": {
+                    "name": "folder_bard",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'voice'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=voice"
+                ],
+                "filter": {
+                    "name": "voice",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'typed_voice'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=typed_voice",
+                    "--package=typed_voice"
+                ],
+                "filter": {
+                    "name": "typed_voice",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'typed_voice'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=typed_voice",
+                    "--package=typed_voice"
+                ],
+                "filter": {
+                    "name": "typed_voice",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
