@@ -24,3 +24,6 @@ This will undergo A LOT of iteration, I am by no means an expert here and will b
 ## Bards
 
 Bards are programs that interact with some aspect, a file bard can tell you about and modify a filesystem for instance. A video bard would Handle anything with the gpu potentially. See the readmes of the individual bards for more information.
+
+### Bard Design
+We should try write logic declaratively where possible. A state of claims and wishes should dictate much of the more complicated compositions leaving only the messy ends as imperative. This isn't a rule, just a suggestion to practice programming this way and make the transition easier later on. This experience will also be invaluable when it comes to designing the language for the Aether.
