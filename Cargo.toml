@@ -2,5 +2,5 @@
 resolver = "3"
 
 members = [
-    "aether", "file_bard", "typed_voice", "voice"
+    "aether", "file_bard", "typed_voice", "video_bard", "voice"
 ]

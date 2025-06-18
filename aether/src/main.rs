@@ -1,8 +1,6 @@
-use core::time;
 use std::thread;
 use std::net::{TcpListener, TcpStream, Shutdown};
 use std::io::{Read, Write};
-use std::time::SystemTime;
 
 fn handle_client(mut stream: TcpStream) {
     let mut data = [0 as u8; 32]; // using 50 byte buffer

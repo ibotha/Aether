@@ -20,3 +20,7 @@ Right now I just want to focus on getting the basic structure, and that centers 
 The programs need to be able to communicate in some standard and flexible manner. A balance must be found between the complete rigidness of an API and the infinite complexity of understanding arbitrary input.
 
 This will undergo A LOT of iteration, I am by no means an expert here and will be figuring this our for a while. I am to achieve this flexibility through the simplicity of what is being communicated. such that more complex communication can emerge from the creation of collaborating programs for a specific use case.
+
+## Bards
+
+Bards are programs that interact with some aspect, a file bard can tell you about and modify a filesystem for instance. A video bard would Handle anything with the gpu potentially. See the readmes of the individual bards for more information.
