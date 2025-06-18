@@ -1,5 +1,10 @@
-use std::{env, fs::{self, DirEntry}, io, path::{Path, PathBuf}};
 use same_file::is_same_file;
+use std::{
+    env,
+    fs::{self, DirEntry},
+    io,
+    path::{Path, PathBuf},
+};
 
 fn contains_loop<P: AsRef<Path>>(path: P) -> io::Result<Option<(PathBuf, PathBuf)>> {
     let path = path.as_ref();
@@ -30,7 +35,12 @@ fn walk_dir(dir: &PathBuf, func: fn(&DirEntry)) {
 fn print_entry<'a>(entry: &'a DirEntry) {
     let path = entry.path();
     let metadata = fs::metadata(&path).expect("Path should have metadata");
-    let last_modified = metadata.modified().expect("Should have last modified track").elapsed().expect("Should be able to resolved elapsed time").as_secs();
+    let last_modified = metadata
+        .modified()
+        .expect("Should have last modified track")
+        .elapsed()
+        .expect("Should be able to resolved elapsed time")
+        .as_secs();
 
     if last_modified < 24 * 3600 && metadata.is_file() {
         println!(
@@ -38,7 +48,9 @@ fn print_entry<'a>(entry: &'a DirEntry) {
             last_modified,
             metadata.permissions().readonly(),
             metadata.len(),
-            path.file_name().ok_or("No filename").expect("Should resolve str for filename")
+            path.file_name()
+                .ok_or("No filename")
+                .expect("Should resolve str for filename")
         );
     }
 }

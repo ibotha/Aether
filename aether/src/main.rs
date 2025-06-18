@@ -1,6 +1,6 @@
-use std::thread;
-use std::net::{TcpListener, TcpStream, Shutdown};
 use std::io::{Read, Write};
+use std::net::{Shutdown, TcpListener, TcpStream};
+use std::thread;
 
 fn handle_client(mut stream: TcpStream) {
     let mut data = [0 as u8; 32]; // using 50 byte buffer
@@ -17,9 +17,12 @@ fn handle_client(mut stream: TcpStream) {
             // deadline = SystemTime::now() + timeout;
             true
             // }
-        },
+        }
         Err(_) => {
-            println!("An error occurred, terminating connection with {}", stream.peer_addr().unwrap());
+            println!(
+                "An error occurred, terminating connection with {}",
+                stream.peer_addr().unwrap()
+            );
             stream.shutdown(Shutdown::Both).unwrap();
             false
         }
@@ -40,7 +43,7 @@ fn main() {
         match stream {
             Ok(stream) => {
                 println!("New connection: {}", stream.peer_addr().unwrap());
-                thread::spawn(move|| {
+                thread::spawn(move || {
                     // connection succeeded
                     handle_client(stream)
                 });

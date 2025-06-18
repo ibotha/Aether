@@ -1,28 +1,26 @@
-use std::net::{TcpStream};
 use std::io::{Error, Read, Write};
+use std::net::TcpStream;
 use std::str::from_utf8;
 
-pub struct Voice{
-    stream: TcpStream
+pub struct Voice {
+    stream: TcpStream,
 }
 
-impl Voice{
+impl Voice {
     pub fn new() -> Result<Self, Error> {
         match TcpStream::connect("localhost:3333") {
             Ok(stream) => {
                 println!("Successfully connected to server in port 3333");
-                Ok(Voice {stream})
-            },
-            Err(e) => {
-                Err(e)
+                Ok(Voice { stream })
             }
+            Err(e) => Err(e),
         }
     }
 
     fn send_chunk(&mut self, chunk: &[u8]) -> bool {
         if chunk.len() < 32 {
-            let mut send_buf= [0 as u8; 32];
-            send_buf[0 .. chunk.len()].copy_from_slice(chunk);
+            let mut send_buf = [0 as u8; 32];
+            send_buf[0..chunk.len()].copy_from_slice(chunk);
             self.stream.write(&send_buf).unwrap();
         } else if chunk.len() > 32 {
             println!("Tried to send a chunk that was too big.");
@@ -45,7 +43,7 @@ impl Voice{
                     println!("Unexpected reply: {}", text);
                     return false;
                 }
-            },
+            }
             Err(e) => {
                 println!("Failed to receive data: {}", e);
             }
