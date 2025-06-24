@@ -135,7 +135,7 @@ impl State {
             height: dimensions.1,
             depth_or_array_layers: 1,
         };
-        let diffuse_texture = device.create_texture(&wgpu::TextureDescriptor {
+        let input_texture = device.create_texture(&wgpu::TextureDescriptor {
             size: texture_size,
             mip_level_count: 1,
             sample_count: 1,
@@ -144,7 +144,27 @@ impl State {
             // TEXTURE_BINDING tells wgpu that we want to use this texture in shaders
             // COPY_DST means that we want to copy data to this texture
             usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
-            label: Some("diffuse_texture"),
+            label: Some("input_texture"),
+            // This is the same as with the SurfaceConfig. It
+            // specifies what texture formats can be used to
+            // create TextureViews for this texture. The base
+            // texture format (Rgba8UnormSrgb in this case) is
+            // always supported. Note that using a different
+            // texture format is not supported on the WebGL2
+            // backend.
+            view_formats: &[],
+        });
+        
+        let output_tex = device.create_texture(&wgpu::TextureDescriptor {
+            size: texture_size,
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format: wgpu::TextureFormat::Rgba8Unorm,
+            // TEXTURE_BINDING tells wgpu that we want to use this texture in shaders
+            // COPY_DST means that we want to copy data to this texture
+            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::STORAGE_BINDING,
+            label: Some("output_texture"),
             // This is the same as with the SurfaceConfig. It
             // specifies what texture formats can be used to
             // create TextureViews for this texture. The base
@@ -158,7 +178,7 @@ impl State {
         queue.write_texture(
             // Tells wgpu where to copy the pixel data
             wgpu::TexelCopyTextureInfo {
-                texture: &diffuse_texture,
+                texture: &input_texture,
                 mip_level: 0,
                 origin: wgpu::Origin3d::ZERO,
                 aspect: wgpu::TextureAspect::All,
@@ -174,10 +194,10 @@ impl State {
             texture_size,
         );
 
-        let diffuse_texture_view =
-            diffuse_texture.create_view(&wgpu::TextureViewDescriptor::default());
+        let input_texture_view =
+            input_texture.create_view(&wgpu::TextureViewDescriptor::default());
 
-        let diffuse_sampler = device.create_sampler(&wgpu::SamplerDescriptor {
+        let basic_sampler = device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::ClampToEdge,
             address_mode_v: wgpu::AddressMode::ClampToEdge,
             address_mode_w: wgpu::AddressMode::ClampToEdge,
@@ -210,7 +230,7 @@ impl State {
                 ],
                 label: Some("texture_bind_group_layout"),
             });
-        let dot_detector = DotDetector::new(&queue, &device, &diffuse_image);
+        let dot_detector = DotDetector::new(&device, &input_texture, &output_tex);
 
         let diffuse_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &texture_bind_group_layout,
@@ -218,12 +238,12 @@ impl State {
                 wgpu::BindGroupEntry {
                     binding: 0,
                     resource: wgpu::BindingResource::TextureView(
-                        &dot_detector.textures[1].create_view(&TextureViewDescriptor::default()),
+                        &output_tex.create_view(&TextureViewDescriptor::default()),
                     ),
                 },
                 wgpu::BindGroupEntry {
                     binding: 1,
-                    resource: wgpu::BindingResource::Sampler(&diffuse_sampler),
+                    resource: wgpu::BindingResource::Sampler(&basic_sampler),
                 },
             ],
             label: Some("diffuse_bind_group"),
