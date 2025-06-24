@@ -2,7 +2,10 @@ use std::sync::Arc;
 mod dot_detector;
 use bytemuck::{Pod, Zeroable};
 use tracing::{debug, error};
-use wgpu::{TextureViewDescriptor, include_wgsl, util::DeviceExt};
+use wgpu::{
+    Extent3d, Origin3d, TexelCopyTextureInfo, Texture, TextureViewDescriptor, include_wgsl,
+    util::DeviceExt,
+};
 use winit::{
     application::ApplicationHandler,
     error::EventLoopError,
@@ -72,6 +75,9 @@ pub struct State {
     num_indices: u32,
     diffuse_bind_group: wgpu::BindGroup,
     dot_detector: DotDetector,
+    output_texture: Texture,
+    diffuse_texture: Texture,
+    tex_index: usize,
 }
 
 impl State {
@@ -97,8 +103,11 @@ impl State {
         let (device, queue) = adapter
             .request_device(&wgpu::DeviceDescriptor {
                 label: None,
-                required_features: wgpu::Features::empty(),
-                required_limits: wgpu::Limits::default(),
+                required_features: wgpu::Features::TEXTURE_ADAPTER_SPECIFIC_FORMAT_FEATURES,
+                required_limits: wgpu::Limits {
+                    max_storage_textures_per_shader_stage: 6,
+                    ..Default::default()
+                },
                 memory_hints: Default::default(),
                 trace: wgpu::Trace::Off,
             })
@@ -143,7 +152,9 @@ impl State {
             format: wgpu::TextureFormat::Rgba8Unorm,
             // TEXTURE_BINDING tells wgpu that we want to use this texture in shaders
             // COPY_DST means that we want to copy data to this texture
-            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
+            usage: wgpu::TextureUsages::TEXTURE_BINDING
+                | wgpu::TextureUsages::COPY_DST
+                | wgpu::TextureUsages::COPY_SRC,
             label: Some("input_texture"),
             // This is the same as with the SurfaceConfig. It
             // specifies what texture formats can be used to
@@ -154,7 +165,7 @@ impl State {
             // backend.
             view_formats: &[],
         });
-        
+
         let output_tex = device.create_texture(&wgpu::TextureDescriptor {
             size: texture_size,
             mip_level_count: 1,
@@ -163,7 +174,10 @@ impl State {
             format: wgpu::TextureFormat::Rgba8Unorm,
             // TEXTURE_BINDING tells wgpu that we want to use this texture in shaders
             // COPY_DST means that we want to copy data to this texture
-            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::STORAGE_BINDING,
+            usage: wgpu::TextureUsages::TEXTURE_BINDING
+                | wgpu::TextureUsages::COPY_DST
+                | wgpu::TextureUsages::COPY_SRC
+                | wgpu::TextureUsages::STORAGE_BINDING,
             label: Some("output_texture"),
             // This is the same as with the SurfaceConfig. It
             // specifies what texture formats can be used to
@@ -194,8 +208,7 @@ impl State {
             texture_size,
         );
 
-        let input_texture_view =
-            input_texture.create_view(&wgpu::TextureViewDescriptor::default());
+        let input_texture_view = input_texture.create_view(&wgpu::TextureViewDescriptor::default());
 
         let basic_sampler = device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::ClampToEdge,
@@ -230,7 +243,7 @@ impl State {
                 ],
                 label: Some("texture_bind_group_layout"),
             });
-        let dot_detector = DotDetector::new(&device, &input_texture, &output_tex);
+        let dot_detector = DotDetector::new(&device, &input_texture);
 
         let diffuse_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &texture_bind_group_layout,
@@ -331,13 +344,17 @@ impl State {
             num_indices,
             diffuse_bind_group,
             dot_detector,
+            output_texture: output_tex,
+            tex_index: 0,
+            diffuse_texture: input_texture,
         })
     }
 
-    fn handle_key(&self, event_loop: &ActiveEventLoop, code: KeyCode, is_pressed: bool) {
+    fn handle_key(&mut self, event_loop: &ActiveEventLoop, code: KeyCode, is_pressed: bool) {
         match (code, is_pressed) {
             (KeyCode::Escape, true) => event_loop.exit(),
-            _ => {}
+            (KeyCode::ArrowRight, true) => self.tex_index += 1,
+            A => {}
         }
     }
 
@@ -367,7 +384,12 @@ impl State {
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("Render Encoder"),
             });
-        self.dot_detector.encode(&mut encoder);
+        self.dot_detector.encode(
+            &mut encoder,
+            &self.diffuse_texture,
+            &self.output_texture,
+            Some(self.tex_index % self.dot_detector.textures.len()),
+        );
         {
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Render Pass"),
@@ -383,7 +405,6 @@ impl State {
                 occlusion_query_set: None,
                 timestamp_writes: None,
             });
-
             render_pass.set_pipeline(&self.render_pipeline);
             render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
             render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
